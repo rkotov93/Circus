@@ -1,8 +1,8 @@
-const CircusDAO = artifacts.require("CircusDao");
+const CircusDAO = artifacts.require("CircusDAO");
 
 module.exports = async function (_deployer) {
   await _deployer.deploy(CircusDAO);
 
-  const circusDao = await CircusDAO.deployed();
-  await circusDao.initialize();
+  const circusDAO = await CircusDAO.deployed();
+  await circusDAO.initialize();
 };

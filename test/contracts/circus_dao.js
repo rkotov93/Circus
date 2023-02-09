@@ -1,25 +1,25 @@
-const CircusDao = artifacts.require("CircusDao");
+const CircusDAO = artifacts.require("CircusDAO");
 const CircusCoin = artifacts.require("CircusCoin");
 
-contract("CircusDao", (accounts) => {
+contract("CircusDAO", (accounts) => {
   let deployer = accounts[0];
-  let circusDao;
+  let circusDAO;
   let circusCoin;
 
   async function addClown(clownAddress) {
-    await circusDao.nominateClown(clownAddress);
-    await circusDao.approveClown(clownAddress);
-    await circusDao.joinCircus({ from: clownAddress });
+    await circusDAO.nominateClown(clownAddress);
+    await circusDAO.approveClown(clownAddress);
+    await circusDAO.joinCircus({ from: clownAddress });
   }
 
   beforeEach(async () => {
-    circusDao = await CircusDao.new({ from: deployer });
-    await circusDao.initialize();
-    circusCoin = await CircusCoin.at(await circusDao.circusCoin());
+    circusDAO = await CircusDAO.new({ from: deployer });
+    await circusDAO.initialize();
+    circusCoin = await CircusCoin.at(await circusDAO.circusCoin());
   });
 
   it("adds first clown and transfers 1000 circus coins to him", async () => {
-    assert.ok(await circusDao.isClown(deployer));
+    assert.ok(await circusDAO.isClown(deployer));
     assert.equal(await circusCoin.balanceOf(deployer), 100000000);
   });
 
@@ -27,16 +27,16 @@ contract("CircusDao", (accounts) => {
     let clownToBeNominated = accounts[1];
 
     it("creates ClownNomination", async () => {
-      await circusDao.nominateClown(clownToBeNominated);
+      await circusDAO.nominateClown(clownToBeNominated);
 
-      const nomination = await circusDao.clownNominations(clownToBeNominated);
+      const nomination = await circusDAO.clownNominations(clownToBeNominated);
       assert.equal(nomination.nominated, true);
     });
 
     context("when clowns is already a part of Circus", () => {
       it("raises an error", async () => {
         try {
-          await circusDao.nominateClown(accounts[0]);
+          await circusDAO.nominateClown(accounts[0]);
           assert.ok(false);
         } catch (error) {
           assert.equal(error.reason, "This clown is aldready a part of Circus");
@@ -47,7 +47,7 @@ contract("CircusDao", (accounts) => {
     context("when called not by clown", () => {
       it("raises an error", async () => {
         try {
-          await circusDao.nominateClown(clownToBeNominated, {
+          await circusDAO.nominateClown(clownToBeNominated, {
             from: accounts[1],
           });
           assert.ok(false);
@@ -62,12 +62,12 @@ contract("CircusDao", (accounts) => {
 
     context("when clown was already nominated", async () => {
       beforeEach(async () => {
-        await circusDao.nominateClown(clownToBeNominated);
+        await circusDAO.nominateClown(clownToBeNominated);
       });
 
       it("raises an error", async () => {
         try {
-          await circusDao.nominateClown(clownToBeNominated);
+          await circusDAO.nominateClown(clownToBeNominated);
           assert.ok(false);
         } catch (error) {
           assert.equal(error.reason, "Clown was already nominated");
@@ -82,7 +82,7 @@ contract("CircusDao", (accounts) => {
     context("when called not by clown", () => {
       it("raises an error", async () => {
         try {
-          await circusDao.approveClown(nominatedClown, { from: accounts[1] });
+          await circusDAO.approveClown(nominatedClown, { from: accounts[1] });
           assert.ok(false);
         } catch (error) {
           assert.equal(
@@ -96,7 +96,7 @@ contract("CircusDao", (accounts) => {
     context("when clown was not nominated yet", () => {
       it("raises an error", async () => {
         try {
-          await circusDao.approveClown(nominatedClown);
+          await circusDAO.approveClown(nominatedClown);
           assert.ok(false);
         } catch (error) {
           assert.equal(error.reason, "Clown has to be nominated before");
@@ -106,17 +106,17 @@ contract("CircusDao", (accounts) => {
 
     context("with nomiated clown", () => {
       beforeEach(async () => {
-        await circusDao.nominateClown(nominatedClown);
+        await circusDAO.nominateClown(nominatedClown);
       });
 
       context("when clown was already approved by this clown", () => {
         beforeEach(async () => {
-          circusDao.approveClown(nominatedClown);
+          circusDAO.approveClown(nominatedClown);
         });
 
         it("raises an error", async () => {
           try {
-            await circusDao.approveClown(nominatedClown);
+            await circusDAO.approveClown(nominatedClown);
             assert.ok(false);
           } catch (error) {
             assert.equal(error.reason, "You have already approved this clown!");
@@ -125,11 +125,11 @@ contract("CircusDao", (accounts) => {
       });
 
       it("approves the clown", async () => {
-        await circusDao.approveClown(nominatedClown);
-        const nomination = await circusDao.clownNominations(nominatedClown);
+        await circusDAO.approveClown(nominatedClown);
+        const nomination = await circusDAO.clownNominations(nominatedClown);
         assert.equal(nomination.approvalsCount, 1);
         assert.equal(
-          await circusDao.isNominationApprovedByMe(nominatedClown),
+          await circusDAO.isNominationApprovedByMe(nominatedClown),
           true
         );
       });
@@ -140,7 +140,7 @@ contract("CircusDao", (accounts) => {
     context("when clown is already a part of Circus", () => {
       it("raises an error", async () => {
         try {
-          await circusDao.joinCircus();
+          await circusDAO.joinCircus();
           assert.ok(false);
         } catch (error) {
           assert.equal(error.reason, "You are already a part of Circus");
@@ -153,7 +153,7 @@ contract("CircusDao", (accounts) => {
 
       it("raises an error", async () => {
         try {
-          await circusDao.joinCircus({ from: notNominatedClown });
+          await circusDAO.joinCircus({ from: notNominatedClown });
           assert.ok(false);
         } catch (error) {
           assert.equal(error.reason, "You were not nominated yet");
@@ -168,13 +168,13 @@ contract("CircusDao", (accounts) => {
       beforeEach(async () => {
         await addClown(secondClown);
 
-        await circusDao.nominateClown(nominatedClown);
-        await circusDao.approveClown(nominatedClown);
+        await circusDAO.nominateClown(nominatedClown);
+        await circusDAO.approveClown(nominatedClown);
       });
 
       it("raises an error", async () => {
         try {
-          await circusDao.joinCircus({ from: nominatedClown });
+          await circusDAO.joinCircus({ from: nominatedClown });
         } catch (error) {
           assert.equal(error.reason, "You were not approved by all clowns yet");
         }
@@ -185,18 +185,18 @@ contract("CircusDao", (accounts) => {
       const nominatedClown = accounts[1];
 
       beforeEach(async () => {
-        await circusDao.nominateClown(nominatedClown);
-        await circusDao.approveClown(nominatedClown);
+        await circusDAO.nominateClown(nominatedClown);
+        await circusDAO.approveClown(nominatedClown);
       });
 
       it("adds nominated clown to clowns", async () => {
-        await circusDao.joinCircus({ from: nominatedClown });
+        await circusDAO.joinCircus({ from: nominatedClown });
 
-        const nomination = await circusDao.clownNominations(nominatedClown);
+        const nomination = await circusDAO.clownNominations(nominatedClown);
         assert.equal(nomination.completed, true);
 
-        assert.equal(await circusDao.clownsCount(), 2);
-        assert.equal(await circusDao.clowns(nominatedClown), true);
+        assert.equal(await circusDAO.clownsCount(), 2);
+        assert.equal(await circusDAO.clowns(nominatedClown), true);
 
         assert.equal(await circusCoin.balanceOf(nominatedClown), 100000000);
       });

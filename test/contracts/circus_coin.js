@@ -1,21 +1,21 @@
-const CircusDao = artifacts.require("CircusDao");
+const CircusDAO = artifacts.require("CircusDAO");
 const CircusCoin = artifacts.require("CircusCoin");
 
 contract("CircusCoin", (accounts) => {
   let deployer = accounts[0];
-  let circusDao;
+  let circusDAO;
   let circusCoin;
 
   async function addClown(clownAddress) {
-    await circusDao.nominateClown(clownAddress);
-    await circusDao.approveClown(clownAddress);
-    await circusDao.joinCircus({ from: clownAddress });
+    await circusDAO.nominateClown(clownAddress);
+    await circusDAO.approveClown(clownAddress);
+    await circusDAO.joinCircus({ from: clownAddress });
   }
 
   beforeEach(async () => {
-    circusDao = await CircusDao.new({ from: deployer });
-    await circusDao.initialize();
-    circusCoin = await CircusCoin.at(await circusDao.circusCoin());
+    circusDAO = await CircusDAO.new({ from: deployer });
+    await circusDAO.initialize();
+    circusCoin = await CircusCoin.at(await circusDAO.circusCoin());
   });
 
   describe("#transfer", () => {

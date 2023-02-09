@@ -2,7 +2,7 @@ pragma solidity 0.8.17;
 
 import "./CircusCoin.sol";
 
-contract CircusDao {
+contract CircusDAO {
   bool initialized = false;
 
   struct ClownNomination {
@@ -30,6 +30,8 @@ contract CircusDao {
     clownsCount = 1;
     circusCoin = new CircusCoin(address(this), 100000000000000);
     circusCoin.transfer(msg.sender, 100000000);
+
+
   }
 
   function nominateClown(address clownAddress) external onlyClown {
