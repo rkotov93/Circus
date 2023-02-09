@@ -1,8 +1,10 @@
 const CircusDao = artifacts.require("CircusDao");
+const CircusCoin = artifacts.require("CircusCoin");
 
 contract("CircusDao", (accounts) => {
   let deployer = accounts[0];
   let circusDao;
+  let circusCoin;
 
   async function addClown(clownAddress) {
     await circusDao.nominateClown(clownAddress);
@@ -13,6 +15,12 @@ contract("CircusDao", (accounts) => {
   beforeEach(async () => {
     circusDao = await CircusDao.new({ from: deployer });
     await circusDao.initialize();
+    circusCoin = await CircusCoin.at(await circusDao.circusCoin());
+  });
+
+  it("adds first clown and transfers 1000 circus coins to him", async () => {
+    assert.ok(await circusDao.isClown(deployer));
+    assert.equal(await circusCoin.balanceOf(deployer), 100000000);
   });
 
   describe("#nominateClown", () => {
@@ -189,6 +197,8 @@ contract("CircusDao", (accounts) => {
 
         assert.equal(await circusDao.clownsCount(), 2);
         assert.equal(await circusDao.clowns(nominatedClown), true);
+
+        assert.equal(await circusCoin.balanceOf(nominatedClown), 100000000);
       });
     });
   });

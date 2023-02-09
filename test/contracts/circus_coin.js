@@ -33,7 +33,7 @@ contract("CircusCoin", (accounts) => {
         assert.equal(senderBalance, 100000000 - 100);
 
         const recipientBalance = await circusCoin.balanceOf(recipient);
-        assert.equal(recipientBalance, 100);
+        assert.equal(recipientBalance, 100000000 + 100);
       });
     });
 
@@ -75,7 +75,7 @@ contract("CircusCoin", (accounts) => {
         assert.equal(senderBalance, 100000000 - 100);
 
         const recipientBalance = await circusCoin.balanceOf(recipient);
-        assert.equal(recipientBalance, 100);
+        assert.equal(recipientBalance, 100000000 + 100);
       });
     });
 

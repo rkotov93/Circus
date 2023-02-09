@@ -64,6 +64,8 @@ contract CircusDao {
     nomination.completed = true;
     clowns[msg.sender] = true;
     clownsCount += 1;
+
+    circusCoin.transfer(msg.sender, 100000000);
   }
 
   function isClown(address addr) public view returns (bool) {
