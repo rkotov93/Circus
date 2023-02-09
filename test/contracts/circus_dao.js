@@ -12,6 +12,7 @@ contract("CircusDao", (accounts) => {
 
   beforeEach(async () => {
     circusDao = await CircusDao.new({ from: deployer });
+    await circusDao.initialize();
   });
 
   describe("#nominateClown", () => {

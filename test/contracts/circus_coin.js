@@ -14,9 +14,8 @@ contract("CircusCoin", (accounts) => {
 
   beforeEach(async () => {
     circusDao = await CircusDao.new({ from: deployer });
+    await circusDao.initialize();
     circusCoin = await CircusCoin.at(await circusDao.circusCoin());
-
-    await circusDao.claimCircusCoins({ from: deployer });
   });
 
   describe("#transfer", () => {

@@ -3,6 +3,8 @@ pragma solidity 0.8.17;
 import "./CircusCoin.sol";
 
 contract CircusDao {
+  bool initialized = false;
+
   struct ClownNomination {
     bool completed;
     bool nominated;
@@ -21,13 +23,16 @@ contract CircusDao {
     _;
   }
 
-  constructor() {
+  function initialize() external {
+    require(!initialized, "Contract has been initialized already");
+
     clowns[msg.sender] = true;
     clownsCount = 1;
     circusCoin = new CircusCoin(address(this), 100000000000000);
+    circusCoin.transfer(msg.sender, 100000000);
   }
 
-  function nominateClown(address clownAddress) public onlyClown {
+  function nominateClown(address clownAddress) external onlyClown {
     require(!clowns[clownAddress], "This clown is aldready a part of Circus");
     require(!clownNominations[clownAddress].nominated, "Clown was already nominated");
 
@@ -35,7 +40,7 @@ contract CircusDao {
     nomination.nominated = true;
   }
 
-  function approveClown(address clownAddress) public onlyClown {
+  function approveClown(address clownAddress) external onlyClown {
     require(clownNominations[clownAddress].nominated, "Clown has to be nominated before");
 
     ClownNomination storage nomination = clownNominations[clownAddress];
@@ -49,7 +54,7 @@ contract CircusDao {
     return clownNominations[nominatedClown].approvals[msg.sender];
   }
 
-  function joinCircus() public {
+  function joinCircus() external {
     require(!clowns[msg.sender], "You are already a part of Circus");
 
     ClownNomination storage nomination = clownNominations[msg.sender];
@@ -63,9 +68,5 @@ contract CircusDao {
 
   function isClown(address addr) public view returns (bool) {
     return clowns[addr];
-  }
-
-  function claimCircusCoins() public {
-    circusCoin.transfer(msg.sender, 100000000);
   }
 }
