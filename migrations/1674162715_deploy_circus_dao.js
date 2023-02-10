@@ -1,8 +1,7 @@
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
+
 const CircusDAO = artifacts.require("CircusDAO");
 
-module.exports = async function (_deployer) {
-  await _deployer.deploy(CircusDAO);
-
-  const circusDAO = await CircusDAO.deployed();
-  await circusDAO.initialize();
+module.exports = async function (deployer) {
+  await deployProxy(CircusDAO, { deployer, initializer: false });
 };

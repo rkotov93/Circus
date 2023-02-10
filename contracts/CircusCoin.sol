@@ -1,12 +1,14 @@
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "./CircusDAO.sol";
 
-contract CircusCoin is ERC20 {
+contract CircusCoin is ERC20Upgradeable {
   CircusDAO dao;
 
-  constructor(address _dao, uint256 initialSupply) ERC20("CircusCoin", "CIRCUS") {
+  function initialize(address _dao, uint256 initialSupply) initializer public {
+    __ERC20_init("CircusCoin", "CIRCUS");
+
     dao = CircusDAO(_dao);
     _mint(_dao, initialSupply);
   }

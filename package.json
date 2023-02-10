@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.8.1"
+    "@openzeppelin/contracts-upgradeable": "^4.8.1",
+    "@openzeppelin/truffle-upgrades": "^1.17.0"
   }
 }

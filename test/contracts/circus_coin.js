@@ -1,3 +1,5 @@
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
+
 const CircusDAO = artifacts.require("CircusDAO");
 const CircusCoin = artifacts.require("CircusCoin");
 
@@ -13,9 +15,11 @@ contract("CircusCoin", (accounts) => {
   }
 
   beforeEach(async () => {
-    circusDAO = await CircusDAO.new({ from: deployer });
-    await circusDAO.initialize();
-    circusCoin = await CircusCoin.at(await circusDAO.circusCoin());
+    circusDAO = await deployProxy(CircusDAO, { initializer: false });
+    circusCoin = await deployProxy(CircusCoin, { initializer: false });
+
+    await circusCoin.initialize(circusDAO.address, 1_000_000_000_00000);
+    await circusDAO.initialize(circusCoin.address);
   });
 
   describe("#transfer", () => {

@@ -1,10 +1,9 @@
 pragma solidity 0.8.17;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./CircusCoin.sol";
 
-contract CircusDAO {
-  bool initialized = false;
-
+contract CircusDAO is Initializable {
   struct ClownNomination {
     bool completed;
     bool nominated;
@@ -23,15 +22,11 @@ contract CircusDAO {
     _;
   }
 
-  function initialize() external {
-    require(!initialized, "Contract has been initialized already");
-
+  function initialize(address _circusCoin) initializer public {
     clowns[msg.sender] = true;
     clownsCount = 1;
-    circusCoin = new CircusCoin(address(this), 100000000000000);
+    circusCoin = CircusCoin(_circusCoin);
     circusCoin.transfer(msg.sender, 100000000);
-
-
   }
 
   function nominateClown(address clownAddress) external onlyClown {
