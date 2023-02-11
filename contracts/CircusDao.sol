@@ -1,7 +1,7 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "./CircusCoin.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 contract CircusDAO is Initializable {
   struct ClownNomination {
@@ -15,7 +15,7 @@ contract CircusDAO is Initializable {
   mapping (address => bool) public clowns;
   mapping (address => ClownNomination) public clownNominations;
 
-  CircusCoin public circusCoin;
+  IERC20Upgradeable public circusCoin;
 
   modifier onlyClown() {
     require(clowns[msg.sender], "This method can be called by one of the clowns only");
@@ -25,7 +25,7 @@ contract CircusDAO is Initializable {
   function initialize(address _circusCoin) initializer public {
     clowns[msg.sender] = true;
     clownsCount = 1;
-    circusCoin = CircusCoin(_circusCoin);
+    circusCoin = IERC20Upgradeable(_circusCoin);
     circusCoin.transfer(msg.sender, 100000000);
   }
 

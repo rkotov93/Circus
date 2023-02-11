@@ -18,7 +18,7 @@ contract CircusCoin is ERC20Upgradeable {
   }
 
   function _beforeTokenTransfer(address from, address to, uint256 value) internal virtual override {
-    require(dao.clowns(to) || to == address(dao), "Circus Coins can belong to clowns only");
+    require(dao.isClown(to) || to == address(dao), "Circus Coins can belong to clowns only");
 
     super._beforeTokenTransfer(from, to, value);
   }
