@@ -2,6 +2,7 @@ const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 
 const CircusDAO = artifacts.require("CircusDAO");
 const CircusCoin = artifacts.require("CircusCoin");
+const Banana = artifacts.require("Banana");
 
 contract("CircusDAO", (accounts) => {
   let deployer = accounts[0];
@@ -14,12 +15,20 @@ contract("CircusDAO", (accounts) => {
     await circusDAO.joinCircus({ from: clownAddress });
   }
 
+  async function pickBanana(sender) {
+    const metadataURI = "https://url.local/metadata.json";
+    const result = await banana.pick(metadataURI, { from: sender });
+    return result.logs[0].args.tokenId;
+  }
+
   beforeEach(async () => {
     circusDAO = await deployProxy(CircusDAO, { initializer: false });
     circusCoin = await deployProxy(CircusCoin, { initializer: false });
+    banana = await deployProxy(Banana, { initializer: false });
 
     await circusCoin.initialize(circusDAO.address, 1_000_000_000_00000);
-    await circusDAO.initialize(circusCoin.address);
+    await banana.initialize(circusDAO.address);
+    await circusDAO.initialize(circusCoin.address, banana.address);
   });
 
   it("adds first clown and transfers 1000 circus coins to him", async () => {
@@ -204,6 +213,26 @@ contract("CircusDAO", (accounts) => {
 
         assert.equal(await circusCoin.balanceOf(nominatedClown), 100000000);
       });
+    });
+  });
+
+  describe("#leaveCircus", () => {
+    const sender = accounts[0];
+
+    beforeEach(async () => {
+      await pickBanana(sender);
+      await pickBanana(sender);
+    });
+
+    it("removes froms clowns and moves balances to DAO", async () => {
+      await circusDAO.leaveCircus({ from: sender });
+
+      assert.equal(await circusDAO.clownsCount(), 0);
+      assert.equal(
+        await circusCoin.balanceOf(circusDAO.address),
+        1_000_000_000_00000
+      );
+      assert.equal(await banana.balanceOf(circusDAO.address), 2);
     });
   });
 });

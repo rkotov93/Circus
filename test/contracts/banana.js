@@ -25,9 +25,10 @@ contract("CircusCoin", (accounts) => {
     circusDAO = await deployProxy(CircusDAO, { initializer: false });
     circusCoin = await deployProxy(CircusCoin, { initializer: false });
     banana = await deployProxy(Banana, { initializer: false });
+
     await circusCoin.initialize(circusDAO.address, 1_000_000_000_00000);
     await banana.initialize(circusDAO.address);
-    await circusDAO.initialize(circusCoin.address);
+    await circusDAO.initialize(circusCoin.address, banana.address);
   });
 
   describe("#pick", () => {
@@ -96,6 +97,26 @@ contract("CircusCoin", (accounts) => {
 
           const balance = await banana.balanceOf(recipient);
           assert.equal(balance, 0);
+        }
+      });
+    });
+  });
+
+  describe("#resetBalance", () => {
+    const clown = accounts[1];
+
+    beforeEach(async () => {
+      await addClown(clown);
+      await pickBanana(clown);
+    });
+
+    context("when sender is not a DAO", () => {
+      it("raises an error", async () => {
+        try {
+          await banana.resetBalance(clown);
+          assert.ok(false);
+        } catch (error) {
+          assert.equal(error.reason, "Only DAO can reset the balance");
         }
       });
     });

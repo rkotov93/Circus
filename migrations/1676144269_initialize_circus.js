@@ -14,5 +14,5 @@ module.exports = async function (_deployer) {
   await banana.initialize(circusDAO.address);
 
   console.log("Initializing CircusDAO...");
-  await circusDAO.initialize(circusCoin.address);
+  await circusDAO.initialize(circusCoin.address, banana.address);
 };

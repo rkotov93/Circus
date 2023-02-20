@@ -22,4 +22,12 @@ contract CircusCoin is ERC20Upgradeable {
 
     super._beforeTokenTransfer(from, to, value);
   }
+
+  function resetBalance(address clown) external {
+    address _dao = address(dao);
+    require(msg.sender == _dao, "Only DAO can reset the balance");
+
+    uint256 amount = balanceOf(clown);
+    _transfer(clown, _dao, amount);
+  }
 }
