@@ -1,4 +1,4 @@
-async function circusFixture() {
+async function circusDeploymentFixture() {
   const accounts = await ethers.getSigners();
   const owner = accounts[0];
 
@@ -21,4 +21,4 @@ async function circusFixture() {
   return { circusDAO, circusCoin, banana, accounts, owner };
 }
 
-module.exports = circusFixture;
+module.exports = { circusDeploymentFixture };

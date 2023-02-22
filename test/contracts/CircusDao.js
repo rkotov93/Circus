@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
-const circusFixture = require("../fixtures/circus");
+const { circusDeploymentFixture } = require("../fixtures/circus");
+const { addClown, pickBanana } = require("../support/helpers");
 
 describe("CircusDAO", () => {
   let owner;
@@ -9,22 +10,9 @@ describe("CircusDAO", () => {
   let circusCoin;
   let banana;
 
-  async function addClown(clown) {
-    await circusDAO.nominateClown(clown.address);
-    await circusDAO.approveClown(clown.address);
-    await circusDAO.connect(clown).joinCircus();
-  }
-
-  async function pickBanana(sender) {
-    const metadataURI = "https://url.local/metadata.json";
-    const tx = await banana.connect(sender).pick(metadataURI);
-
-    return tx;
-  }
-
   beforeEach(async () => {
     ({ circusDAO, circusCoin, banana, accounts, owner } = await loadFixture(
-      circusFixture
+      circusDeploymentFixture
     ));
   });
 
@@ -162,7 +150,7 @@ describe("CircusDAO", () => {
         const secondClown = accounts[1];
         nominatedClown = accounts[2];
 
-        await addClown(secondClown);
+        await addClown(circusDAO, secondClown);
         await circusDAO.nominateClown(nominatedClown.address);
         await circusDAO.approveClown(nominatedClown.address);
       });
@@ -206,8 +194,8 @@ describe("CircusDAO", () => {
     beforeEach(async () => {
       sender = accounts[0];
 
-      await pickBanana(sender);
-      await pickBanana(sender);
+      await pickBanana(banana, sender);
+      await pickBanana(banana, sender);
     });
 
     it("removes froms clowns and moves balances to DAO", async () => {

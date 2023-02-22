@@ -1,30 +1,12 @@
 const { expect } = require("chai");
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
-const circusFixture = require("../fixtures/circus");
+const { circusDeploymentFixture } = require("../fixtures/circus");
+const { addClown, pickBanana } = require("../support/helpers");
 
 describe("Banana", () => {
   let accounts;
   let circusDAO;
   let banana;
-
-  async function addClown(clown) {
-    await circusDAO.nominateClown(clown.address);
-    await circusDAO.approveClown(clown.address);
-    await circusDAO.connect(clown).joinCircus();
-  }
-
-  // async function pickBanana(sender) {
-  //   const metadataURI = "https://url.local/metadata.json";
-  //   const result = await banana.pick(metadataURI, { from: sender });
-  //   return result.logs[0].args.tokenId;
-  // }
-
-  async function pickBanana(sender) {
-    const metadataURI = "https://url.local/metadata.json";
-    const tx = await banana.connect(sender).pick(metadataURI);
-
-    return tx;
-  }
 
   async function getTokenId(tx) {
     const receipt = await tx.wait(0);
@@ -34,7 +16,9 @@ describe("Banana", () => {
   }
 
   beforeEach(async () => {
-    ({ circusDAO, banana, accounts } = await loadFixture(circusFixture));
+    ({ circusDAO, banana, accounts } = await loadFixture(
+      circusDeploymentFixture
+    ));
   });
 
   describe("#pick", () => {
@@ -42,7 +26,7 @@ describe("Banana", () => {
       it("raises an error", async () => {
         const sender = accounts[1];
 
-        expect(pickBanana(sender)).to.be.revertedWith(
+        expect(pickBanana(banana, sender)).to.be.revertedWith(
           "NFT can be transfered only to clowns"
         );
       });
@@ -51,7 +35,7 @@ describe("Banana", () => {
     context("when sender is a clown", () => {
       it("mints banana", async () => {
         const sender = accounts[0];
-        const tokenId = await getTokenId(await pickBanana(sender));
+        const tokenId = await getTokenId(await pickBanana(banana, sender));
 
         expect(await banana.balanceOf(sender.address)).to.be.eq(1);
         expect(await banana.ownerOf(tokenId)).to.be.eq(sender.address);
@@ -70,13 +54,13 @@ describe("Banana", () => {
       recipient = accounts[1];
       spender = accounts[2];
 
-      tokenId = await getTokenId(await pickBanana(sender));
+      tokenId = await getTokenId(await pickBanana(banana, sender));
       await banana.approve(spender.address, tokenId);
     });
 
     context("when recipient is a clown", () => {
       beforeEach(async () => {
-        await addClown(recipient);
+        await addClown(circusDAO, recipient);
       });
 
       it("transfers banana", async () => {
@@ -112,8 +96,8 @@ describe("Banana", () => {
     beforeEach(async () => {
       clown = accounts[1];
 
-      await addClown(clown);
-      await pickBanana(clown);
+      await addClown(circusDAO, clown);
+      await pickBanana(banana, clown);
     });
 
     context("when sender is not a DAO", () => {

@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
-const circusFixture = require("../fixtures/circus");
+const { circusDeploymentFixture } = require("../fixtures/circus");
+const { addClown } = require("../support/helpers");
 
 describe("CircusCoin", () => {
   let owner;
@@ -8,15 +9,9 @@ describe("CircusCoin", () => {
   let circusDAO;
   let circusCoin;
 
-  async function addClown(clown) {
-    await circusDAO.nominateClown(clown.address);
-    await circusDAO.approveClown(clown.address);
-    await circusDAO.connect(clown).joinCircus();
-  }
-
   beforeEach(async () => {
     ({ circusDAO, circusCoin, owner, accounts } = await loadFixture(
-      circusFixture
+      circusDeploymentFixture
     ));
   });
 
@@ -29,7 +24,7 @@ describe("CircusCoin", () => {
 
     context("when recipient is a clown", () => {
       beforeEach(async () => {
-        await addClown(recipient);
+        await addClown(circusDAO, recipient);
       });
 
       it("transfers money", async () => {
@@ -70,7 +65,7 @@ describe("CircusCoin", () => {
 
     context("when recipient is a clown", () => {
       beforeEach(async () => {
-        await addClown(recipient);
+        await addClown(circusDAO, recipient);
       });
 
       it("transfers money", async () => {
@@ -105,7 +100,7 @@ describe("CircusCoin", () => {
 
     beforeEach(async () => {
       clown = accounts[1];
-      await addClown(clown);
+      await addClown(circusDAO, clown);
     });
 
     context("when sender is not a DAO", () => {
