@@ -1,13 +1,13 @@
-const { deployProxy } = require("@openzeppelin/truffle-upgrades");
+// const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 
-const CircusDAO = artifacts.require("CircusDAO");
-const CircusCoin = artifacts.require("CircusCoin");
+// const CircusDAO = artifacts.require("CircusDAO");
+// const CircusCoin = artifacts.require("CircusCoin");
 
-async function addClownContext(clownAddress) {
-  await circusDAO.nominateClown(clownAddress);
-  await circusDAO.approveClown(clownAddress);
-  await circusDAO.joinCircus({ from: clownAddress });
-}
+// async function addClownContext(clownAddress) {
+//   await circusDAO.nominateClown(clownAddress);
+//   await circusDAO.approveClown(clownAddress);
+//   await circusDAO.joinCircus({ from: clownAddress });
+// }
 
 // function initializeCircus() {
 //   beforeEach(async () => {
@@ -19,7 +19,7 @@ async function addClownContext(clownAddress) {
 //   });
 // }
 
-module.exports = { addClownContext };
+// module.exports = { addClownContext };
 
 // const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 

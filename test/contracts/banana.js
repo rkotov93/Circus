@@ -1,70 +1,77 @@
-const { deployProxy } = require("@openzeppelin/truffle-upgrades");
+const { expect } = require("chai");
+const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
+const circusFixture = require("../fixtures/circus");
 
-const CircusDAO = artifacts.require("CircusDAO");
-const CircusCoin = artifacts.require("CircusCoin");
-const Banana = artifacts.require("Banana");
-
-contract("CircusCoin", (accounts) => {
+describe("Banana", () => {
+  let accounts;
   let circusDAO;
-  let circusCoin;
   let banana;
 
-  async function addClown(clownAddress) {
-    await circusDAO.nominateClown(clownAddress);
-    await circusDAO.approveClown(clownAddress);
-    await circusDAO.joinCircus({ from: clownAddress });
+  async function addClown(clown) {
+    await circusDAO.nominateClown(clown.address);
+    await circusDAO.approveClown(clown.address);
+    await circusDAO.connect(clown).joinCircus();
   }
+
+  // async function pickBanana(sender) {
+  //   const metadataURI = "https://url.local/metadata.json";
+  //   const result = await banana.pick(metadataURI, { from: sender });
+  //   return result.logs[0].args.tokenId;
+  // }
 
   async function pickBanana(sender) {
     const metadataURI = "https://url.local/metadata.json";
-    const result = await banana.pick(metadataURI, { from: sender });
-    return result.logs[0].args.tokenId;
+    const tx = await banana.connect(sender).pick(metadataURI);
+
+    return tx;
+  }
+
+  async function getTokenId(tx) {
+    const receipt = await tx.wait(0);
+    const transferEvent = receipt.events.pop();
+
+    return transferEvent.args.tokenId;
   }
 
   beforeEach(async () => {
-    circusDAO = await deployProxy(CircusDAO, { initializer: false });
-    circusCoin = await deployProxy(CircusCoin, { initializer: false });
-    banana = await deployProxy(Banana, { initializer: false });
-
-    await circusCoin.initialize(circusDAO.address, 1_000_000_000_00000);
-    await banana.initialize(circusDAO.address);
-    await circusDAO.initialize(circusCoin.address, banana.address);
+    ({ circusDAO, banana, accounts } = await loadFixture(circusFixture));
   });
 
   describe("#pick", () => {
     context("when sender is not a clown", () => {
-      const sender = accounts[1];
-
       it("raises an error", async () => {
-        try {
-          await pickBanana(sender);
-          assert.ok(false);
-        } catch (error) {
-          assert.equal(error.reason, "NFT can be transfered only to clowns");
-        }
+        const sender = accounts[1];
+
+        expect(pickBanana(sender)).to.be.revertedWith(
+          "NFT can be transfered only to clowns"
+        );
       });
     });
 
     context("when sender is a clown", () => {
-      const sender = accounts[0];
-
       it("mints banana", async () => {
-        const tokenId = await pickBanana(sender);
-        assert.equal(await banana.balanceOf(sender), 1);
-        assert.equal(await banana.ownerOf(tokenId), sender);
+        const sender = accounts[0];
+        const tokenId = await getTokenId(await pickBanana(sender));
+
+        expect(await banana.balanceOf(sender.address)).to.be.eq(1);
+        expect(await banana.ownerOf(tokenId)).to.be.eq(sender.address);
       });
     });
   });
 
   describe("#transferFrom", () => {
-    const sender = accounts[0];
-    const recipient = accounts[1];
-    const spender = accounts[2];
+    let sender;
+    let recipient;
+    let spender;
     let tokenId;
 
     beforeEach(async () => {
-      tokenId = await pickBanana(sender);
-      await banana.approve(spender, tokenId);
+      sender = accounts[0];
+      recipient = accounts[1];
+      spender = accounts[2];
+
+      tokenId = await getTokenId(await pickBanana(sender));
+      await banana.approve(spender.address, tokenId);
     });
 
     context("when recipient is a clown", () => {
@@ -73,51 +80,47 @@ contract("CircusCoin", (accounts) => {
       });
 
       it("transfers banana", async () => {
-        await banana.transferFrom(sender, recipient, tokenId, {
-          from: spender,
-        });
+        await banana
+          .connect(spender)
+          .transferFrom(sender.address, recipient.address, tokenId);
 
-        const senderBalance = await banana.balanceOf(sender);
-        assert.equal(senderBalance, 0);
+        const senderBalance = await banana.balanceOf(sender.address);
+        expect(senderBalance).to.be.eq(0);
 
-        const recipientBalance = await banana.balanceOf(recipient);
-        assert.equal(recipientBalance, 1);
+        const recipientBalance = await banana.balanceOf(recipient.address);
+        expect(recipientBalance).to.be.eq(1);
       });
     });
 
     context("when recipient is not a clown", () => {
       it("raises an error", async () => {
-        try {
-          await banana.transferFrom(sender, recipient, tokenId, {
-            from: spender,
-          });
-          assert.ok(false);
-        } catch (error) {
-          assert.equal(error.reason, "NFT can be transfered only to clowns");
+        await expect(
+          banana
+            .connect(spender)
+            .transferFrom(sender.address, recipient.address, tokenId)
+        ).to.be.revertedWith("NFT can be transfered only to clowns");
 
-          const balance = await banana.balanceOf(recipient);
-          assert.equal(balance, 0);
-        }
+        const balance = await banana.balanceOf(recipient.address);
+        expect(balance).to.be.eq(0);
       });
     });
   });
 
   describe("#resetBalance", () => {
-    const clown = accounts[1];
+    let clown;
 
     beforeEach(async () => {
+      clown = accounts[1];
+
       await addClown(clown);
       await pickBanana(clown);
     });
 
     context("when sender is not a DAO", () => {
       it("raises an error", async () => {
-        try {
-          await banana.resetBalance(clown);
-          assert.ok(false);
-        } catch (error) {
-          assert.equal(error.reason, "Only DAO can reset the balance");
-        }
+        await expect(banana.resetBalance(clown.address)).to.be.revertedWith(
+          "Only DAO can reset the balance"
+        );
       });
     });
   });
