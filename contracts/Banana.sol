@@ -19,12 +19,12 @@ contract Banana is ERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable {
     dao = CircusDAO(_dao);
   }
 
-  function pick(string memory tokenURI) public returns (uint256) {
+  function pick(string memory _tokenURI) public returns (uint256) {
     require(dao.isClown(msg.sender), "Only clowns can pick bananas");
 
     uint256 newItemId = _tokenIds.current();
     _mint(msg.sender, newItemId);
-    _setTokenURI(newItemId, tokenURI);
+    _setTokenURI(newItemId, _tokenURI);
 
     _tokenIds.increment();
     return newItemId;
