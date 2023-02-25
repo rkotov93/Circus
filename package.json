@@ -5,7 +5,8 @@
   "license": "MIT",
   "dependencies": {
     "@openzeppelin/contracts-upgradeable": "^4.8.1",
-    "@openzeppelin/hardhat-upgrades": "^1.22.1"
+    "@openzeppelin/hardhat-upgrades": "^1.22.1",
+    "dotenv": "^16.0.3"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",

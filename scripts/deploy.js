@@ -12,21 +12,21 @@ async function main() {
     initializer: false,
   });
   await circusDAO.deployed();
-  console.log("CircusDAO deployed at ", circusDAO.address);
+  console.log("CircusDAO deployed at", circusDAO.address);
 
   const CircusCoin = await ethers.getContractFactory("CircusCoin");
   const circusCoin = await upgrades.deployProxy(CircusCoin, {
     initializer: false,
   });
   await circusCoin.deployed();
-  console.log("CircusCoin deployed at ", circusCoin.address);
+  console.log("CircusCoin deployed at", circusCoin.address);
 
   const Banana = await ethers.getContractFactory("Banana");
   const banana = await upgrades.deployProxy(Banana, {
     initializer: false,
   });
   await banana.deployed();
-  console.log("Banana deployed at ", banana.address);
+  console.log("Banana deployed at", banana.address);
 
   await circusCoin.initialize(circusDAO.address, 1_000_000_000_00000);
   console.log("CircusCoin initialized");
